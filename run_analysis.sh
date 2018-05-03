@@ -8,24 +8,24 @@ execute_time=10000000
 # Run all files in order
 conda activate multiple-myeloma-classifier
 
-# Notebook 1 - Processing Data
+# Notebook 0 - Processing Data
 jupyter nbconvert --to=notebook \
         --ExecutePreprocessor.kernel_name=python3 \
         --ExecutePreprocessor.timeout=$execute_time \
         --execute 0.process-data.ipynb
 
-# Notebook 2 - Machine Learning Application
+# Notebook 1 - Machine Learning Application
 jupyter nbconvert --to=notebook \
         --ExecutePreprocessor.kernel_name=python3 \
         --ExecutePreprocessor.timeout=$execute_time \
         --execute 1.train-classifier.ipynb
 
-# Notebook 3 - Apply Classifier to Cell Line Data
+# Notebook 2 - Apply Classifier to Cell Line Data
 jupyter nbconvert --to=notebook \
         --ExecutePreprocessor.kernel_name=python3 \
         --ExecutePreprocessor.timeout=$execute_time \
         --execute 2.apply-classifier.ipynb
 
-# Visualize Coefficients
-Rscript --vanilla visualize_coefficients.R
+# Step 3 - Visualize Coefficients
+Rscript --vanilla 3.visualize_coefficients.R
 
