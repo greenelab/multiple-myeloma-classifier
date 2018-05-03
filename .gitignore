@@ -1,3 +1,4 @@
 data/raw/*
 .ipynb_checkpoints/
 *.nbconvert*
+__pycache__/
