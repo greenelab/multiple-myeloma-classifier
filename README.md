@@ -43,3 +43,9 @@ conda activate multiple-myeloma-classifier
 The analysis consists of a series of notebooks that are designed to be run in order.
 See `run_analysis.sh` for more details.
 
+Notebooks are converted into python `.py` files and stored in the `scipts/` folder with:
+
+```bash
+jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb
+```
+
