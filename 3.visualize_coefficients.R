@@ -26,29 +26,69 @@ coef_file <- file.path('results', 'classifier', 'classifier_coefficients.tsv')
 coef_df <- readr::read_tsv(coef_file) %>%
   dplyr::left_join(gene_dict_df, by = 'GENE_ID')
 
+# Define cutoffs to label top 10 genes (by absolute value) for each classifier
+# Note that dplyr still has some serious issues with writing functions
+n <- 5
+
+top_kras <- as.numeric(coef_df %>%
+  dplyr::top_n(n = n, KRAS) %>%
+  dplyr::select(KRAS) %>%
+  dplyr::arrange(desc(KRAS)) %>%
+  dplyr::filter(row_number() == n()))
+
+bot_kras <- as.numeric(coef_df %>%
+  dplyr::top_n(n = n, desc(KRAS)) %>%
+  dplyr::select(KRAS) %>%
+  dplyr::arrange(KRAS) %>%
+  dplyr::filter(row_number()==n()))
+
+top_wt <- as.numeric(coef_df %>%
+  dplyr::top_n(n = n, wildtype) %>%
+  dplyr::select(wildtype) %>%
+  dplyr::arrange(desc(wildtype)) %>%
+  dplyr::filter(row_number() == n()))
+
+bot_wt <- as.numeric(coef_df %>%
+  dplyr::top_n(n = n, desc(wildtype)) %>%
+  dplyr::select(wildtype) %>%
+  dplyr::arrange(wildtype) %>%
+  dplyr::filter(row_number()==n()))
+
+top_nras <- as.numeric(coef_df %>%
+  dplyr::top_n(n = n, NRAS) %>%
+  dplyr::select(NRAS) %>%
+  dplyr::arrange(desc(NRAS)) %>%
+  dplyr::filter(row_number() == n()))
+
+bot_nras <- as.numeric(coef_df %>%
+  dplyr::top_n(n = n, desc(NRAS)) %>%
+  dplyr::select(NRAS) %>%
+  dplyr::arrange(NRAS) %>%
+  dplyr::filter(row_number()==n()))
+
 # Plot gene coefficients scatter
 p <- ggplot2::ggplot(coef_df,
-                aes(x = wildtype, y = KRAS, color = NRAS)) +
+                     aes(x = KRAS, y = NRAS, color = wildtype)) +
   geom_point(alpha = 0.8, size = 0.1) +
-  scale_color_gradient2('NRAS\nGene Weight',
+  scale_color_gradient2('Wildtype\nGene Weight',
                         low = "blue",
                         mid = "grey",
                         high = "red") +
-  xlab("Wildtype - Gene Weight") +
-  ylab("KRAS - Gene Weight") +
+  xlab("KRAS - Gene Weight") +
+  ylab("NRAS - Gene Weight") +
   geom_text_repel(data = subset(coef_df,
-                                (wildtype > 7 | wildtype < -8) |
-                                  (KRAS > 9 | KRAS < -8.7) |
-                                  (NRAS > 7.8 | NRAS < -8.6)
-                                ),
-                  arrow = arrow(length = unit(0.02, 'npc')),
-                  segment.size = 0.3,
-                  segment.alpha = 0.6,
-                  box.padding = 0.17,
-                  point.padding = 0.1,
-                  size = 1.8,
-                  fontface = 'italic',
-                  aes(x = wildtype, y = KRAS, label = SYMBOL)) +
+                                (wildtype >= top_wt | wildtype <= bot_wt) |
+                                  (KRAS >= top_kras | KRAS <= bot_kras) |
+                                  (NRAS >= top_nras | NRAS <= bot_nras)
+  ),
+  arrow = arrow(length = unit(0.02, 'npc')),
+  segment.size = 0.3,
+  segment.alpha = 0.6,
+  box.padding = 0.17,
+  point.padding = 0.1,
+  size = 1.8,
+  fontface = 'italic',
+  aes(x = KRAS, y = NRAS, label = SYMBOL)) +
   theme_bw() +
   theme(axis.text = element_text(size = rel(0.5)),
         axis.title = element_text(size = rel(0.6)),
