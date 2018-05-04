@@ -2,3 +2,4 @@ data/raw/*
 .ipynb_checkpoints/
 *.nbconvert*
 __pycache__/
+.Rhistory
