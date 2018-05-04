@@ -16,4 +16,7 @@ dependencies:
 - conda-forge::ipykernel=4.8.1
 - conda-forge::widgetsnbextension=2.0.0
 - conda-forge::nb_conda_kernels=2.1.0
-
+- conda-forge::r-readr=1.1.1
+- conda-forge::r-ggplot2=2.2.1
+- conda-forge::r-dplyr=0.7.4
+- conda-forge::r-ggrepel=0.7.0
