@@ -5,11 +5,11 @@
 # 
 # In the following notebook, we process input matrices for downstream machine learning applications.
 # 
-# We first calculate and visualize the per gene variability in the CoMMpass dataset.
+# We first calculate and visualize the per gene variability in the CoMMpass gene expression dataset.
 # We use Median Absolute Deviation ([MAD](https://en.wikipedia.org/wiki/median_absolute_deviation)) to measure gene expression variability.
-# We output this measurement to a file and recommend subsetting to 8,000 genes before input to machine learning models. This captures the majority of the variation in the data in raw gene space. This is a similar observation as seen previously in other experiments (see [Way et al. 2018](https://doi.org/10.1016/j.celrep.2018.03.046 "Machine Learning Detects Pan-cancer Ras Pathway Activation in The Cancer Genome Atlas") and [this discussion](https://github.com/cognoma/machine-learning/pull/18#issuecomment-236265506))
+# We output this measurement to a file and recommend subsetting to 8,000 genes before input to machine learning models. This captures the majority of the variation in the data in raw gene space. This is a similar observation as seen previously in other experiments (see [Way et al. 2018](https://doi.org/10.1016/j.celrep.2018.03.046 "Machine Learning Detects Pan-cancer Ras Pathway Activation in The Cancer Genome Atlas") and [this discussion](https://github.com/cognoma/machine-learning/pull/18#issuecomment-236265506)).
 # 
-# We next subset the training and testing X matrices by these MAD genes and scale their measurements to a range of (0,1) by gene. We also process Y matrices into an sklearn ingestible format. Importantly, we process the dual Ras mutated samples (~3%) separately.
+# We next subset the training and testing X matrices by these MAD genes and scale their measurements to a range of (0,1) by gene. We also process Y matrices into an `sklearn` ingestible format. Importantly, we process the dual Ras mutated samples (~3%) separately.
 
 # In[1]:
 
@@ -295,7 +295,7 @@ y_train_df.columns = ['ras_status']
 # In[23]:
 
 
-# Confirm that the genes are the same between training and testing
+# Confirm that the samples are the same between training and testing
 assert (y_train_df.index == train_df.index).all(), 'The samples between X and Y training matrices are not aligned!'
 
 
@@ -423,7 +423,7 @@ x_test_df.to_csv(file, compression='gzip', sep='\t')
 # In[35]:
 
 
-percent_dual = y_dual_df.shape[0] / (train_df.shape[1] + test_df.shape[1])
+percent_dual = y_dual_df.shape[0] / (train_df.shape[0] + test_df.shape[0])
 print('{0:.1f}% of the samples have mutations in both KRAS and NRAS'.format(percent_dual * 100))
 
 
@@ -445,11 +445,18 @@ assert (x_dual_df.index == y_dual_df.index).all(), 'The samples between X and Y 
 # In[38]:
 
 
+# Also, confirm that the dual genes are aligned to other X matrices
+assert (x_dual_df.columns == train_df.columns).all(), 'The genes between dual and other X matrices are not aligned!'
+
+
+# In[39]:
+
+
 file = os.path.join('data', 'compass_x_dual.tsv.gz')
 x_dual_df.to_csv(file, compression='gzip', sep='\t')
 
 
-# In[39]:
+# In[40]:
 
 
 file = os.path.join('data', 'compass_y_dual.tsv')
