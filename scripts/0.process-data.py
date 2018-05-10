@@ -3,7 +3,8 @@
 
 # # Process CoMMpass Data
 # 
-# In the following notebook, we process input matrices for downstream machine learning applications.
+# In the following notebook, we process input RNAseq gene expression matrices for downstream machine learning applications.
+# Prior to processing, the input expression matrix was FPKM normalized.
 # 
 # We first calculate and visualize the per gene variability in the CoMMpass gene expression dataset.
 # We use Median Absolute Deviation ([MAD](https://en.wikipedia.org/wiki/median_absolute_deviation)) to measure gene expression variability.
