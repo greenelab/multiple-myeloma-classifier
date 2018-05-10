@@ -27,6 +27,13 @@ jupyter nbconvert --to=html \
         --ExecutePreprocessor.timeout=$execute_time \
         --execute 2.apply-classifier.ipynb
 
-# Step 3 - Visualize Coefficients
-Rscript --vanilla 3.visualize_coefficients.R
+# Currently commented out - see https://github.com/greenelab/multiple-myeloma-classifier/issues/3
+# for more details
+# Notebook 3 - Visualize Coefficients
+# jupyter nbconvert --to=html \
+#        --FilesWriter.build_directory=html \
+#        --ExecutePreprocessor.kernel_name=R \
+#        --execute 3.visualize-coefficients.ipynb
+
+Rscript scriptes/3.visualize-coefficients.r
 
