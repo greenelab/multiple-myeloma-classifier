@@ -3,3 +3,4 @@ data/raw/*
 *.nbconvert*
 __pycache__/
 .Rhistory
+Rplots.pdf
