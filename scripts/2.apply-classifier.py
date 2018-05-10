@@ -7,7 +7,7 @@
 # 
 # We apply the multiple myeloma multiclass classifier trained in `1.train-classifier.py` to a cell line RNAseq data set. This data was also provided by Arun Wiita and Tony Lin (UCSF).
 # 
-# **Note: The classifier can be applied to other datasets by following the steps outlined in this notebook**
+# **Note: The classifier can be applied to other datasets by following the steps outlined in this notebook. The input data is expected to be in FPKM. Also note that the current approach is not likely to work well for smaller datasets since the FPKM genes are normalized across the dataset.**
 
 # In[1]:
 
