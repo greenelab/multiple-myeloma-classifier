@@ -11,7 +11,7 @@
 # Here, we implemented a one vs. rest (ovr) [multiclass classifier](https://en.wikipedia.org/wiki/Multiclass_classification) to predict _KRAS_ and _NRAS_ mutations separately in multiple myeloma.
 # The hypothesis was that the two mutations result in different downstream biology that machine learning classifiers can detect. Detecting the two mutations separately can potentially inform different treatment options.
 # 
-# Our collaborators at UCSF (Arun Wiita and Tony Lin) randomly partitioned 10% (mutation-balanced) of the input gene expression data into training (n = 706) and testing (n = 80) sets. We used the training set with the [sklearn.linear_model.LogisticRegression](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) class to train models. We selected optimal regularization (`C`) and penalty (`l1` vs. `l2` loss) terms following 5 fold cross validation. We observed optimal hyperparameters of `C=0.5` and `penalty=l1`. We applied the model to the held out test set to assess performance. We also apply the model to a series of 26 multiple myeloma samples with dual _KRAS_/_NRAS_ mutations.
+# Our collaborators at UCSF (Arun Wiita and Tony Lin) randomly partitioned 10% (mutation-balanced) of the input gene expression data into training (n = 706) and testing (n = 80) sets. We used the training set with the [sklearn.linear_model.LogisticRegression](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) class to train models. We selected optimal regularization (`C`) and penalty (`l1` vs. `l2` loss) terms following 5 fold cross validation. We observed optimal hyperparameters of `C=0.45` and `penalty=l1`. We applied the model to the held out test set to assess performance. We also apply the model to a series of 26 multiple myeloma samples with dual _KRAS_/_NRAS_ mutations.
 # 
 # ## Notebook Outputs
 # 
@@ -26,6 +26,7 @@
 
 import os
 import random
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -71,6 +72,7 @@ penalties = ['l1', 'l2']
 
 
 # Read in training RNAseq data (X matrix)
+# RNAseq data was FPKM normalized and then MinMax scaled by gene to a range of (0, 1)
 file = os.path.join('data', 'compass_x_train.tsv.gz')
 x_df = pd.read_table(file, index_col=0)
 
@@ -122,17 +124,18 @@ cv_pipeline = GridSearchCV(estimator=estimator,
                            param_grid=clf_parameters,
                            n_jobs=-1,
                            cv=5,
+                           return_train_score=True,
                            scoring=weighted_f1_scorer)
 
 
 # ### Fit Model
 # 
-# This takes about 10 minutes to train. For many model parameters, sklearn will throw convergence warnings. This means that after 100 iterations, an optimal solution is not found.
+# This takes a couple minutes to train. For many model parameters, sklearn will throw convergence warnings. This means that after 100 iterations, an optimal solution is not found.  Prevent the warnings from being printed redundantly.
 
 # In[8]:
 
 
-get_ipython().run_cell_magic('time', '', 'cv_pipeline.fit(X=x_df, y=y_df.ras_status)')
+get_ipython().run_cell_magic('time', '', 'with warnings.catch_warnings():\n    warnings.simplefilter("ignore")\n    cv_pipeline.fit(X=x_df, y=y_df.ras_status)')
 
 
 # In[9]:
@@ -169,7 +172,7 @@ plt.tight_layout()
 # 
 # ### Extract and Save Classifier Coefficients
 
-# In[ ]:
+# In[11]:
 
 
 path = os.path.join('results', 'classifier')
@@ -177,7 +180,7 @@ if not os.path.exists(path):
     os.makedirs(path)
 
 
-# In[11]:
+# In[12]:
 
 
 coef_df = pd.DataFrame(
@@ -197,7 +200,7 @@ coef_df.to_csv(file, sep='\t')
 coef_df.head()
 
 
-# In[12]:
+# In[13]:
 
 
 # How many classifier genes are nonzero?
@@ -206,7 +209,7 @@ print('{} genes are nonzero ({} %)'.format(num_nonzero,
                                            (num_nonzero / coef_df.shape[0]) * 100))
 
 
-# In[13]:
+# In[14]:
 
 
 # Save the intercept of the multiclass classifier
@@ -222,7 +225,7 @@ intercept_df
 
 # ### Obtain probability estimates for all training samples
 
-# In[14]:
+# In[15]:
 
 
 scores_df = cv_pipeline.best_estimator_.predict_proba(x_df)
@@ -238,7 +241,7 @@ print(scores_df.shape)
 scores_df.head()
 
 
-# In[15]:
+# In[16]:
 
 
 # Visualize probability estimates against ground truth status
@@ -267,7 +270,7 @@ sns.heatmap(score_heatmap);
 # 
 # Scores for this set are output as well.
 
-# In[16]:
+# In[17]:
 
 
 # Read in testing RNAseq data (X matrix)
@@ -278,7 +281,7 @@ print(x_test_df.shape)
 x_test_df.head(2)
 
 
-# In[17]:
+# In[18]:
 
 
 # Read in testing status data (Y matrix)
@@ -291,7 +294,7 @@ print(y_test_df.ras_status.value_counts())
 y_test_df.head(2)
 
 
-# In[18]:
+# In[19]:
 
 
 # Apply classifier to testing data and get scores
@@ -307,7 +310,7 @@ print(test_scores_df.shape)
 test_scores_df.head(2)
 
 
-# In[19]:
+# In[20]:
 
 
 # Visualize probability estimates against ground truth status for the testing set
@@ -330,7 +333,7 @@ sns.heatmap(score_heatmap);
 
 # ### Get a Shuffled Training X Matrix
 
-# In[20]:
+# In[21]:
 
 
 # Shuffle training X matrix to observe potential metric inflation
@@ -338,7 +341,7 @@ sns.heatmap(score_heatmap);
 x_shuffled_df = x_df.apply(shuffle_columns, axis=1)
 
 
-# In[21]:
+# In[22]:
 
 
 shuffle_scores_df = cv_pipeline.best_estimator_.predict_proba(x_shuffled_df)
@@ -361,7 +364,7 @@ shuffle_scores_df.head()
 # 
 # Also output ROC and PR Curves to the `figures` folder.
 
-# In[ ]:
+# In[23]:
 
 
 path = os.path.join('figures')
@@ -369,7 +372,7 @@ if not os.path.exists(path):
     os.makedirs(path)
 
 
-# In[22]:
+# In[24]:
 
 
 # Convert the y vector into one hot encoded matrices
@@ -380,7 +383,7 @@ train_onehot_df = onehot.transform(y_df)
 test_onehot_df = onehot.transform(y_test_df)
 
 
-# In[23]:
+# In[25]:
 
 
 n_classes = 3
@@ -434,7 +437,7 @@ for i in range(n_classes):
     aupr_shuff[i] = average_precision_score(train_onehot_class, shuff_score_class)
 
 
-# In[24]:
+# In[26]:
 
 
 plt.subplots(figsize=(4, 4))
@@ -479,7 +482,7 @@ file = os.path.join('figures', 'roc_curve.pdf')
 plt.savefig(file, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-# In[25]:
+# In[27]:
 
 
 plt.subplots(figsize=(4, 4))
@@ -525,7 +528,7 @@ plt.savefig(file, bbox_extra_artists=(lgd,), bbox_inches='tight')
 # 
 # Output classifier scores per Dual Ras mutated sample
 
-# In[26]:
+# In[28]:
 
 
 # Read in dual RNAseq data (X matrix)
@@ -536,7 +539,7 @@ print(x_dual_df.shape)
 x_dual_df.head(2)
 
 
-# In[27]:
+# In[29]:
 
 
 # Apply classifier to dual data and save scores
@@ -553,7 +556,7 @@ print(dual_scores_df.shape)
 dual_scores_df.head()
 
 
-# In[28]:
+# In[30]:
 
 
 # Visualize dual Ras sample score heatmap
