@@ -35,5 +35,5 @@ jupyter nbconvert --to=html \
 #        --ExecutePreprocessor.kernel_name=R \
 #        --execute 3.visualize-coefficients.ipynb
 
-Rscript scriptes/3.visualize-coefficients.r
+Rscript scripts/3.visualize-coefficients.r
 
