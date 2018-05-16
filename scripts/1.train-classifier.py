@@ -41,11 +41,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import make_scorer, f1_score
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.metrics import roc_curve, precision_recall_curve
+from sklearn.metrics import confusion_matrix
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from utils import shuffle_columns
+from utils import shuffle_columns, get_confusion_matrix
 
 
 # In[2]:
@@ -262,6 +263,27 @@ plt.subplots(figsize=(18,2))
 sns.heatmap(score_heatmap);
 
 
+# In[18]:
+
+
+# Get Confusion Matrix for Training Data
+y_train_pred = cv_pipeline.best_estimator_.predict(x_df)
+y_train_true = np.array(y_df.ras_status)
+
+plt.subplots(figsize=(5,5))
+
+train_confusion, ax = get_confusion_matrix(y_true=y_train_true,
+                                           y_pred=y_train_pred)
+
+ax.set_title('Training Confusion Matrix')
+file = os.path.join('figures', 'train_confusion_matrix.png')
+plt.savefig(file, bbox_inches='tight')
+
+file = os.path.join('results', 'training_confusion_matrix.tsv')
+train_confusion.to_csv(file, sep='\t')
+train_confusion
+
+
 # ## Apply Classifier to Testing and Shuffled Sets
 # 
 # A shuffled matrix will determine how the model would have performed withough any signal. This tests if class imbalance induces biased metrics.
@@ -270,7 +292,7 @@ sns.heatmap(score_heatmap);
 # 
 # Scores for this set are output as well.
 
-# In[17]:
+# In[19]:
 
 
 # Read in testing RNAseq data (X matrix)
@@ -281,7 +303,7 @@ print(x_test_df.shape)
 x_test_df.head(2)
 
 
-# In[18]:
+# In[20]:
 
 
 # Read in testing status data (Y matrix)
@@ -294,7 +316,7 @@ print(y_test_df.ras_status.value_counts())
 y_test_df.head(2)
 
 
-# In[19]:
+# In[21]:
 
 
 # Apply classifier to testing data and get scores
@@ -310,7 +332,7 @@ print(test_scores_df.shape)
 test_scores_df.head(2)
 
 
-# In[20]:
+# In[22]:
 
 
 # Visualize probability estimates against ground truth status for the testing set
@@ -331,9 +353,30 @@ plt.subplots(figsize=(18,2))
 sns.heatmap(score_heatmap);
 
 
+# In[23]:
+
+
+# Get Confusion Matrix for Testing Data
+y_test_pred = cv_pipeline.best_estimator_.predict(x_test_df)
+y_test_true = np.array(y_test_df.ras_status)
+
+plt.subplots(figsize=(5,5))
+
+test_confusion, ax = get_confusion_matrix(y_true=y_test_true,
+                                          y_pred=y_test_pred)
+
+ax.set_title('Test Set Confusion Matrix')
+file = os.path.join('figures', 'test_confusion_matrix.png')
+plt.savefig(file, bbox_inches='tight')
+
+file = os.path.join('results', 'test_confusion_matrix.tsv')
+test_confusion.to_csv(file, sep='\t')
+test_confusion
+
+
 # ### Get a Shuffled Training X Matrix
 
-# In[21]:
+# In[24]:
 
 
 # Shuffle training X matrix to observe potential metric inflation
@@ -341,7 +384,7 @@ sns.heatmap(score_heatmap);
 x_shuffled_df = x_df.apply(shuffle_columns, axis=1)
 
 
-# In[22]:
+# In[25]:
 
 
 shuffle_scores_df = cv_pipeline.best_estimator_.predict_proba(x_shuffled_df)
@@ -351,6 +394,27 @@ shuffle_scores_df = pd.DataFrame(shuffle_scores_df,
 
 print(shuffle_scores_df.shape)
 shuffle_scores_df.head()
+
+
+# In[26]:
+
+
+# Get Confusion Matrix for Shuffled Data
+y_shuff_pred = cv_pipeline.best_estimator_.predict(x_shuffled_df)
+y_shuff_true = np.array(y_df.ras_status)
+
+plt.subplots(figsize=(5,5))
+
+shuff_confusion, ax = get_confusion_matrix(y_true=y_shuff_true,
+                                           y_pred=y_shuff_pred)
+
+ax.set_title('Shuffled Data Confusion Matrix')
+file = os.path.join('figures', 'shuffled_confusion_matrix.png')
+plt.savefig(file, bbox_inches='tight')
+
+file = os.path.join('results', 'shuffled_confusion_matrix.tsv')
+shuff_confusion.to_csv(file, sep='\t')
+shuff_confusion
 
 
 # ## Collect Classification Metrics for Training, Testing, and Shuffled Data
@@ -364,7 +428,7 @@ shuffle_scores_df.head()
 # 
 # Also output ROC and PR Curves to the `figures` folder.
 
-# In[23]:
+# In[27]:
 
 
 path = os.path.join('figures')
@@ -372,7 +436,7 @@ if not os.path.exists(path):
     os.makedirs(path)
 
 
-# In[24]:
+# In[28]:
 
 
 # Convert the y vector into one hot encoded matrices
@@ -383,7 +447,7 @@ train_onehot_df = onehot.transform(y_df)
 test_onehot_df = onehot.transform(y_test_df)
 
 
-# In[25]:
+# In[29]:
 
 
 n_classes = 3
@@ -437,7 +501,7 @@ for i in range(n_classes):
     aupr_shuff[i] = average_precision_score(train_onehot_class, shuff_score_class)
 
 
-# In[26]:
+# In[30]:
 
 
 plt.subplots(figsize=(4, 4))
@@ -482,7 +546,7 @@ file = os.path.join('figures', 'roc_curve.pdf')
 plt.savefig(file, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-# In[27]:
+# In[31]:
 
 
 plt.subplots(figsize=(4, 4))
@@ -528,7 +592,7 @@ plt.savefig(file, bbox_extra_artists=(lgd,), bbox_inches='tight')
 # 
 # Output classifier scores per Dual Ras mutated sample
 
-# In[28]:
+# In[32]:
 
 
 # Read in dual RNAseq data (X matrix)
@@ -539,7 +603,7 @@ print(x_dual_df.shape)
 x_dual_df.head(2)
 
 
-# In[29]:
+# In[33]:
 
 
 # Apply classifier to dual data and save scores
@@ -556,7 +620,7 @@ print(dual_scores_df.shape)
 dual_scores_df.head()
 
 
-# In[30]:
+# In[34]:
 
 
 # Visualize dual Ras sample score heatmap
@@ -568,4 +632,12 @@ dual_score_heatmap = (
 
 plt.subplots(figsize=(18,1.5))
 g = sns.heatmap(dual_score_heatmap);
+
+
+# In[35]:
+
+
+# Observe the predictions on the dual mutated samples
+y_dual_pred = cv_pipeline.best_estimator_.predict(x_dual_df)
+pd.Series(y_dual_pred).value_counts()
 
