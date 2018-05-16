@@ -37,3 +37,5 @@ jupyter nbconvert --to=html \
 
 Rscript scripts/3.visualize-coefficients.r
 
+jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb
+
