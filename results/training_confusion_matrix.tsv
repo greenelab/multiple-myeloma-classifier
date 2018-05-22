@@ -1,0 +1,4 @@
+	wildtype_pred	KRAS_pred	NRAS_pred
+wildtype_true	371	33	35
+KRAS_true	7	119	12
+NRAS_true	9	7	113

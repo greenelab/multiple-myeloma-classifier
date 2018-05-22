@@ -10,7 +10,11 @@ Usage:
 
 import numpy as np
 import pandas as pd
+
 from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.metrics import confusion_matrix
+
+import seaborn as sns
 
 
 def apply_classifier(x, w, b, proba=True, dropna=True):
@@ -59,3 +63,30 @@ def shuffle_columns(gene):
     """
     import numpy as np
     return np.random.permutation(gene.tolist())
+
+
+def get_confusion_matrix(y_true, y_pred):
+    """
+    Obtain confusion matrix for input truth and predictions (import only)
+
+    Arguments:
+    y_true - numpy array of class assignments
+    y_pred - numpy array of class predictions
+    name - label for output file and heatmap title
+
+    Output:
+    Confusion matrix table and heatmap axes
+    """
+
+    conf_mat = confusion_matrix(y_true, y_pred)
+
+    conf_mat = (
+        pd.DataFrame(conf_mat,
+                     index=['wildtype_true', 'KRAS_true', 'NRAS_true'],
+                     columns=['wildtype_pred', 'KRAS_pred', 'NRAS_pred'])
+    )
+
+    conf_mat_percent = conf_mat.divide(conf_mat.sum(axis=0), axis=1)
+    ax = sns.heatmap(conf_mat_percent, annot=True, fmt='.1%')
+
+    return conf_mat, ax

@@ -26,7 +26,7 @@ from sklearn.metrics import roc_curve, precision_recall_curve
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils import shuffle_columns, apply_classifier
+from utils import shuffle_columns, get_confusion_matrix, apply_classifier
 
 
 # In[2]:
@@ -96,7 +96,7 @@ print("of the {} non zero genes, {} are present in MMCL ({} %)".format(len(nonze
                                                                        (numcommon / len(nonzero_genes)) * 100))
 
 
-# In[9]:
+# In[8]:
 
 
 # How many genes are missing
@@ -111,7 +111,7 @@ missing_coef.head(5)
 
 # ## Process Cell Line Y Matrix
 
-# In[11]:
+# In[9]:
 
 
 file = os.path.join('data', 'raw', 'MMCL_RNAseq_labels.csv')
@@ -123,21 +123,21 @@ y_df = (
 y_df.head(3)
 
 
-# In[12]:
+# In[10]:
 
 
 # Number of Ras mutations in the cell line dataset
 y_df.sum()
 
 
-# In[13]:
+# In[11]:
 
 
 # Proportion of Ras mutations in the cell line dataset
 y_df.sum() / y_df.shape[0]
 
 
-# In[14]:
+# In[12]:
 
 
 # Recode the Y matrix
@@ -150,7 +150,7 @@ y_df.columns = ['ras_status']
 y_df.head()
 
 
-# In[15]:
+# In[13]:
 
 
 # Recode y matrix for metric eval
@@ -159,7 +159,7 @@ y_onehot_df = OneHotEncoder(sparse=False).fit_transform(y_df)
 
 # ## Apply Classifier to Cell Line Data
 
-# In[16]:
+# In[14]:
 
 
 # Zero one normalize the cell line data
@@ -170,14 +170,14 @@ mmcl_processed_df = pd.DataFrame(scaled_fit.transform(mmcl_df),
 mmcl_processed_df.head()
 
 
-# In[17]:
+# In[15]:
 
 
 # Confirm that the samples are the same between training and testing
 assert (y_df.index == mmcl_processed_df.index).all(), 'The samples between X and Y cell line matrices are not aligned!'
 
 
-# In[18]:
+# In[16]:
 
 
 # Use the `apply_classifier` custom function (found in `utils.py`)
@@ -196,7 +196,7 @@ mmcl_scores.head(3)
 
 # ### Apply classifier to a shuffled cell line X matrix
 
-# In[19]:
+# In[17]:
 
 
 # Shuffle training X matrix to observe potential metric inflation
@@ -204,7 +204,7 @@ mmcl_scores.head(3)
 mmcl_shuffled_df = mmcl_processed_df.apply(shuffle_columns, axis=1)
 
 
-# In[20]:
+# In[18]:
 
 
 mmcl_shuffle_scores = apply_classifier(mmcl_shuffled_df,
@@ -216,7 +216,7 @@ mmcl_shuffle_scores.head()
 
 # ## Obtain classification metrics for the Cell Line Data
 
-# In[21]:
+# In[19]:
 
 
 n_classes = 3
@@ -254,7 +254,7 @@ for i in range(n_classes):
     aupr_shuff[i] = average_precision_score(train_onehot_class, shuff_score_class)
 
 
-# In[22]:
+# In[20]:
 
 
 # Visualize ROC curves
@@ -294,7 +294,7 @@ file = os.path.join('figures', 'cellline_roc_curve.pdf')
 plt.savefig(file, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-# In[23]:
+# In[21]:
 
 
 # Visualize PR curves
@@ -316,8 +316,8 @@ plt.axis('equal')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.0])
 
-plt.xlabel('False Positive Rate', fontsize=12)
-plt.ylabel('True Positive Rate', fontsize=12)
+plt.xlabel('Recall', fontsize=12)
+plt.ylabel('Precision', fontsize=12)
 
 plt.tick_params(labelsize=10)
 
@@ -334,7 +334,7 @@ plt.savefig(file, bbox_extra_artists=(lgd,), bbox_inches='tight')
 # 
 # This plot represents multiclass probability (`x axis`) scores (`y axis`) for all samples (`points`) and their corresponding ground truth status (`colors`).
 
-# In[24]:
+# In[22]:
 
 
 class_dist_df = (
@@ -347,7 +347,7 @@ class_dist_df = (
 class_dist_df.head(6)
 
 
-# In[25]:
+# In[23]:
 
 
 plt.subplots(figsize=(5.5, 3.5))

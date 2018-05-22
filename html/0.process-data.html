@@ -11775,7 +11775,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Process-CoMMpass-Data">Process CoMMpass Data<a class="anchor-link" href="#Process-CoMMpass-Data">&#182;</a></h1><p>In the following notebook, we process input matrices for downstream machine learning applications.</p>
+<h1 id="Process-CoMMpass-Data">Process CoMMpass Data<a class="anchor-link" href="#Process-CoMMpass-Data">&#182;</a></h1><p>In the following notebook, we process input RNAseq gene expression matrices for downstream machine learning applications.
+Prior to processing, the input expression matrix was FPKM normalized.</p>
 <p>We first calculate and visualize the per gene variability in the CoMMpass gene expression dataset.
 We use Median Absolute Deviation (<a href="https://en.wikipedia.org/wiki/median_absolute_deviation">MAD</a>) to measure gene expression variability.
 We output this measurement to a file and recommend subsetting to 8,000 genes before input to machine learning models. This captures the majority of the variation in the data in raw gene space. This is a similar observation as seen previously in other experiments (see <a href="https://doi.org/10.1016/j.celrep.2018.03.046" title="Machine Learning Detects Pan-cancer Ras Pathway Activation in The Cancer Genome Atlas">Way et al. 2018</a> and <a href="https://github.com/cognoma/machine-learning/pull/18#issuecomment-236265506">this discussion</a>).</p>
