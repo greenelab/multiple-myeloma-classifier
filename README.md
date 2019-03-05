@@ -7,6 +7,12 @@
 In the following analysis, we train a multiclass classifier on RNAseq data of patients with Multiple Myeloma.
 The classifier is trained to distinguish _KRAS_ and _NRAS_ mutations from wild-type tumors.
 
+The analysis is presented in the following preprint:
+
+> Yu-Hsiu Tony Lin,  Gregory P. Way,  Benjamin G. Barwick, Margarette C. Mariano, Makeba Marcoulis, Ian D. Ferguson, Christoph Driessen, Lawrence H. Boise, Casey S. Greene, Arun P. Wiita
+> _Integrated Phosphoproteomics and Transcriptional Classifiers Reveal Hidden RAS Signaling Dynamics in Multiple Myeloma_
+> February 29th, 2019. _biorXiv_ https://doi.org/10.1101/563312.
+
 ## Data
 
 The data was provided by Arun Wiita and Tony Lin (UCSF) as part of the [MMRF CoMMpass Study](https://www.themmrf.org/research-partners/mmrf-data-bank/the-mmrf-commpass-study/).
